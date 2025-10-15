@@ -1,0 +1,130 @@
+# PWTK Admin Web 项目开发规范
+# 模块化规则配置
+
+## 项目概述
+基于Vue 3 + TypeScript + Vite的企业级管理后台系统，包含WebVision可视化页面构建器等多个核心模块。
+
+## 核心技术栈
+- Vue 3 + Composition API + TypeScript
+- Vite构建工具
+- Element Plus UI组件库
+- Pinia状态管理
+- SCSS样式预处理
+
+## 模块规范引用
+
+### Vue.js 通用规范
+遵循 `.cursor-rules/vue-common.md` 中的Vue组件开发规范：
+- 标准组件结构和命名规范
+- Composition API使用规范
+- 响应式数据管理规范
+
+### API接口规范
+遵循 `.cursor-rules/api-standards.md` 中的API开发规范：
+- 统一的请求参数和返回数据格式
+- 标准化的错误处理机制
+- 权限控制和按钮类型规范
+
+### WebVision模块规范
+当开发WebVision相关功能时，遵循 `.cursor-rules/webvision.md` 中的专用规范：
+- 拖拽组件开发规范
+- 组件映射和状态管理规范
+- WebVision特有的API调用方式
+
+## 项目特有规范
+
+### 文件组织规范
+```
+src/
+├── api/          # API接口，按模块分类
+├── components/   # 公共组件
+├── views/        # 页面视图，按业务模块分类
+├── stores/       # Pinia状态管理
+├── utils/        # 工具函数
+└── types/        # TypeScript类型定义
+```
+
+### 路由配置规范
+```typescript
+// 动态路由配置
+{
+  path: '/module-name',
+  name: 'ModuleName',
+  component: () => import('@/views/ModuleName/index.vue'),
+  meta: {
+    title: '模块名称',
+    requiresAuth: true,
+    permissions: ['module:view']
+  }
+}
+```
+
+### 全局组件规范
+```typescript
+// 下拉框组件使用
+<select-type 
+  :typeArrayList="userStateArray" 
+  :typeString="'userState'" 
+  :placeholderString="'账户状态'" 
+  @value="userState" 
+  :isMultiple="true" 
+  ref="operateStateRef"
+/>
+
+// 区号选择组件
+<select-phone-code 
+  :toValue="Phonevalue" 
+  @getValue="phoneCode" 
+  ref="phoneValueRef"
+/>
+```
+
+### 数据请求回调规范
+```typescript
+// 标准数据请求模式
+const data = ref([])
+const total = ref(0)
+const isLoading = ref(false)
+
+const getData = async (params = {}) => {
+  try {
+    isLoading.value = true
+    const res = await apiMethod(params)
+    if (res.success && res.data) {
+      data.value = res.data.list || []
+      total.value = res.data.total || 0
+    }
+  } catch (error) {
+    ElMessage.error('请求失败')
+  } finally {
+    isLoading.value = false
+  }
+}
+```
+
+### 构建和部署规范
+```bash
+# 开发环境
+npm run dev
+
+# 测试环境构建  
+npm run build:test
+
+# 生产环境构建
+npm run build
+
+# 代码格式化（提交前必须执行）
+npm run format
+```
+
+## 代码质量要求
+- 使用ESLint + Prettier进行代码检查和格式化
+- TypeScript严格模式，所有类型必须明确定义
+- 提交前必须通过所有质量检查
+- 遵循项目既定的命名和文件组织规范
+
+## 注意事项
+1. 不同模块开发时，优先参考对应的专用规范文件
+2. 通用规范适用于所有模块的基础开发
+3. 如有冲突，专用规范优先级高于通用规范
+4. 新增功能模块时，可创建对应的专用规范文件

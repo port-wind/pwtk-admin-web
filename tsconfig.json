@@ -1,0 +1,51 @@
+{
+  "compilerOptions": {
+    "target": "ESNext", // 编译后的 JavaScript 目标版本，推荐使用最新的 ES 标准
+    "module": "ESNext", // 模块解析方式，使用 ES 模块
+    "strict": true, // 启用所有严格类型检查选项
+    "jsx": "preserve", // JSX 的处理方式，保留 JSX 以供后续转换
+    "moduleResolution": "node", // 模块解析策略为 Node.js 风格
+    "resolveJsonModule": true, // 允许导入 JSON 作为模块
+    "esModuleInterop": true, // 启用 CommonJS 和 ES 模块之间的互操作性
+    "skipLibCheck": true, // 跳过检查声明文件的类型
+    "allowSyntheticDefaultImports": true, // 允许从没有默认导出的模块中默认导入
+    "strictPropertyInitialization": false, // 对类的非 undefined 属性进行严格检查，可根据需要启用
+    "forceConsistentCasingInFileNames": true, // 强制在文件名中使用一致的大小写
+    "noImplicitReturns": true, // 需要函数返回类型的定义
+    "noFallthroughCasesInSwitch": true, // 禁止在 switch 语句中的 case 语句块中出现 fallthrough（连续落空）
+    "noImplicitAny": false, // 关闭 noImplicitAny
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "baseUrl": "./", // 解析非相对模块名的基准目录
+    "paths": {
+      "@/*": [
+        "src/*"
+      ] // 将所有以 "@/"" 开头的模块映射到 "src/" 目录下
+    },
+    "lib": [
+      "esnext",
+      "dom",
+      "dom.iterable",
+      "scripthost"
+    ],
+    "typeRoots": [
+      "./src/global_types",
+      "node_modules/@types" // 添加默认类型声明目录
+    ]
+  },
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.node.json"
+    },
+    {
+      "path": "./tsconfig.app.json"
+    }
+  ],
+  "exclude": [
+    "node_modules",
+    "dist-dev",
+    "dist"
+  ],
+  "include": [] // 主配置无需具体文件，交给子配置处理
+}

@@ -1,0 +1,4 @@
+<template>
+  <div style="font-size: 20px; text-align: center; padding: 50px">敬请期待！</div>
+</template>
+<script setup lang="ts"></script>
