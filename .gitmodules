@@ -1,0 +1,3 @@
+[submodule "src/views/WebVision/components/componentsbiz"]
+	path = src/views/WebVision/components/componentsbiz
+	url = https://github.com/port-wind/pwtk-admin-web-submodule.git

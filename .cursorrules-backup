@@ -1,0 +1,525 @@
+# WebVision项目 Cursor Rules
+# 可视化页面构建器系统开发规范
+
+## 项目概述
+这是一个基于Vue 3 + TypeScript + Vite的可视化页面构建器系统(WebVision)，支持拖拽式页面搭建、多模式编辑和实时预览功能。
+
+## 核心技术栈
+- Vue 3 + Composition API + TypeScript
+- Vite构建工具
+- Element Plus + Vant UI组件库
+- vuedraggable拖拽功能
+- Pinia状态管理
+- SCSS/CSS样式
+
+## 开发规范
+
+### 1. 文件命名和组织规范
+- **文件夹命名**: 使用camelCase驼峰命名 (如: `WebVision`, `componentsbiz`)
+- **Vue组件文件**: 使用kebab-case命名 (如: `index.vue`, `page-builder.vue`)
+- **TypeScript文件**: 使用camelCase命名 (如: `type.ts`, `middleComponent.ts`)
+- **样式组件后缀**: 右侧配置组件统一使用`style`后缀 (如: `noticestyle`, `magiccubestyle`)
+
+### 2. Vue组件开发规范
+```vue
+<!-- 标准组件结构 -->
+<template>
+  <!-- 使用语义化HTML标签 -->
+  <div class="component-name">
+    <!-- Element Plus组件优先，Vant用于移动端预览 -->
+  </div>
+</template>
+
+<script setup lang="ts">
+import { reactive, ref, computed } from 'vue'
+import type { ComponentProps } from './type'
+
+// Props定义
+interface Props {
+  datas?: ComponentProps
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  datas: () => ({})
+})
+
+// 响应式数据使用ref/reactive
+const isLoading = ref(false)
+const formData = reactive({})
+</script>
+
+<style lang="scss" scoped>
+.component-name {
+  // 使用SCSS嵌套语法
+}
+</style>
+```
+
+### 3. WebVision特有组件规范
+
+#### 3.1 左侧组件库组件 (`components/sliderassembly`)
+- 组件需要支持拖拽功能
+- 必须包含组件预览图标或缩略图
+- 按业务类型分类 (`componentsbiz`, `componentscom`)
+
+#### 3.2 中间预览区组件 (`components/componentscom`, `components/componentsbiz`)
+```typescript
+// 标准组件接口
+interface ComponentStyle {
+  componentType: string
+  componentId: string
+  componentName: string
+  configParamJson: string
+  isView: 'y' | 'n'
+  status?: 'y' | 'n'
+}
+
+// 组件必须支持的Props
+interface ComponentProps {
+  datas: ComponentStyle
+}
+```
+
+#### 3.3 右侧配置面板组件 (`components/rightslider`)
+- 配置组件必须包含表单验证
+- 支持视图模式和JSON模式双重编辑
+- 实时预览配置变化
+- 组件文件名必须以`style`结尾 (如: `noticestyle/index.vue`)
+
+### 4. 类型定义规范
+```typescript
+// 在 type.ts 中定义接口
+export interface PageSetup {
+  name: string
+  details?: string
+  isPerson?: boolean
+  isBack?: boolean
+  titleHeight?: number
+  bgColor?: string
+  bgImg?: string
+}
+
+export interface PageComponent {
+  active?: boolean
+  type: number
+  component: string
+  componentId?: string
+  componentRef?: string
+  componentType?: string
+  configParamJson?: string
+  templateId?: string
+  websiteId?: string
+  setStyle?: ComponentStyle
+  pageRenderingSeq?: number
+  style?: string
+  text?: string
+  selected?: boolean
+}
+
+// Data接口包含完整页面数据
+export interface Data {
+  id: number | null
+  pageSetup: PageSetup
+  demo?: string
+  pageComponents: PageComponent[]
+}
+
+// Choose接口管理组件选择状态
+export interface Choose {
+  deleShow: boolean
+  index: number
+  tab: string
+  currCompName: string
+  rightcom: string
+  currentproperties: unknown
+  offsetY: number
+  onlyOne: string[]
+  pointer: { show: boolean }
+}
+
+// 使用联合类型定义模式
+export type PageMode = 'websiteMode' | 'templateMode' | 'componentMode'
+```
+
+### 5. API调用规范
+```typescript
+// API调用统一处理
+const isLoading = ref(false)
+
+const getData = async (params: QueryParams) => {
+  try {
+    isLoading.value = true
+    const res = await apiMethod(params)
+    if (res.success && res.data) {
+      // 处理数据
+      data.value = res.data.list || []
+      total.value = res.data.total || 0
+    }
+  } catch (error) {
+    ElMessage.error('请求失败')
+  } finally {
+    isLoading.value = false
+  }
+}
+```
+
+### 6. 组件注册和映射规范
+```typescript
+// 在 const/middleComponent.ts 中注册中间预览组件
+import type { Component } from 'vue'
+import custommodule from '../components/componentscom/custommodule/index.vue'
+import notice from '../components/componentscom/notice/index.vue'
+
+interface ComponentMap {
+  [key: string]: Component
+}
+
+export const componentMap: ComponentMap = {
+  custommodule: custommodule,
+  notice: notice,
+  placementarea: placementarea
+  // ... 其他组件
+}
+
+// 在 const/rightComponent.ts 中注册右侧配置组件
+import type { Component } from 'vue'
+import custommodulestyle from '../components/rightslider/custommodulestyle/index.vue'
+import noticestyle from '../components/rightslider/noticestyle/index.vue'
+
+interface ComponentMap {
+  [key: string]: Component
+}
+
+export const componentRightMap: ComponentMap = {
+  custommodulestyle,
+  noticestyle,
+  templateStyle,
+  websiteStyle,
+  // ... 其他配置组件
+}
+```
+
+### 7. 样式规范
+```scss
+// 使用BEM命名规范
+.component-name {
+  &__element {
+    // 元素样式
+  }
+  
+  &--modifier {
+    // 修饰符样式
+  }
+  
+  // 响应式设计
+  @media (max-width: 768px) {
+    // 移动端样式
+  }
+}
+
+// WebVision特有样式类
+.phone-container {
+  // 手机预览容器样式
+  background-color: var(--bg-color);
+  background-image: var(--bg-image);
+}
+
+.componentsClass {
+  // 动态组件基础样式
+  position: relative;
+}
+
+.pointer-events {
+  // 拖拽时的指针穿透样式
+  pointer-events: none;
+}
+
+.deles {
+  // 组件删除按钮样式
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(21, 91, 212, 0.8);
+  color: white;
+  padding: 2px 6px;
+  font-size: 12px;
+  z-index: 1000;
+}
+
+// 状态栏样式
+.statusBar {
+  width: 100%;
+  position: relative;
+}
+
+// 手机尺寸提示
+.phoneSize {
+  text-align: center;
+  font-size: 12px;
+  color: #999;
+}
+```
+
+### 8. 拖拽功能规范
+```vue
+<template>
+  <!-- 主要拖拽区域使用draggable组件 -->
+  <draggable
+    :list="pageComponents"
+    item-key="index"
+    :forceFallback="true"
+    :animation="200"
+    @sort="saveTemRend"
+  >
+    <template #item="{ element, index }">
+      <component
+        :is="componentMap[element.component]"
+        :datas="element.setStyle"
+        :style="{
+          border: element.active && deleShow ? '2px solid #155bd4' : ''
+        }"
+        @click="activeComponent(element, index)"
+        class="componentsClass"
+        :data-type="element.type"
+      >
+        <!-- 删除按钮插槽 -->
+        <template #deles>
+          <div v-show="deleShow" class="deles">
+            <span class="icon-triangle"></span>
+            <span class="deles-icon-text">{{ element.setStyle.componentName }}</span>
+          </div>
+        </template>
+      </component>
+    </template>
+  </draggable>
+
+  <!-- 右侧配置面板中的排序拖拽 -->
+  <vuedraggable 
+    :list="data" 
+    :disabled="false" 
+    class="list-group" 
+    ghost-class="ghost" 
+    :move="checkMove"
+  >
+    <template #item="{ element, index }">
+      <!-- 排序项模板 -->
+    </template>
+  </vuedraggable>
+</template>
+
+<script setup lang="ts">
+import draggable from 'vuedraggable'
+import vuedraggable from 'vuedraggable' // 注意：项目中同时使用两种导入方式
+</script>
+```
+
+### 9. 状态管理规范
+```typescript
+// 使用reactive管理复杂状态
+const datas = reactive<Data>({
+  id: null,
+  pageSetup: {
+    name: '页面标题',
+    details: '',
+    isPerson: false,
+    isBack: true,
+    titleHeight: 35,
+    bgColor: 'rgba(249, 249, 249, 10)',
+    bgImg: ''
+  },
+  pageComponents: []
+})
+
+// 使用reactive管理选择状态
+const choose = reactive<Choose>({
+  deleShow: true,
+  index: 0,
+  rightcom: 'decorate', // 默认右侧组件
+  currentproperties: datas.pageSetup,
+  offsetY: 0,
+  onlyOne: ['1-5', '1-16', 'onlyOne', 'header', 'footer'],
+  pointer: { show: false }
+})
+
+```
+
+### 10. 错误处理和用户反馈
+```typescript
+// 统一错误处理
+import { ElMessage, ElMessageBox } from 'element-plus'
+
+// 成功反馈
+ElMessage.success('操作成功')
+
+// 错误反馈  
+ElMessage.error('操作失败')
+
+// 加载状态
+const isLoading = ref(false)
+
+// 确认对话框
+ElMessageBox.confirm('确定删除该组件？', '提示', {
+  confirmButtonText: '确定',
+  cancelButtonText: '取消',
+  type: 'warning'
+}).then(() => {
+  // 确认操作
+}).catch(() => {
+  // 取消操作
+})
+```
+
+### 11. 模式切换和Tab管理
+```typescript
+// 三种页面模式
+type PageMode = 'websiteMode' | 'templateMode' | 'componentMode'
+
+// Tab页面管理
+const activeTab = ref('0') // 默认站点设置
+const isEditJSON = ref(true) // JSON模式开关
+
+// 模式切换函数
+const toggleEditJSON = () => {
+  isEditJSON.value = !isEditJSON.value
+}
+
+// Tab切换处理
+const onTabChange = (tab: string) => {
+  // 处理tab切换逻辑
+}
+```
+
+### 12. 组件激活和选择规范
+```typescript
+// 组件激活函数
+const activeComponent = (res: SelectComponent, index: number) => {
+  console.log('🚀 ~ activeComponent ~ res:', res)
+  activeTab.value = '2' // 切换到组件设置Tab
+  choose.index = index
+  choose.rightcom = res.style // 切换右侧配置组件
+  choose.currentproperties = res.setStyle // 更新当前属性
+  
+  // 重置所有组件选中状态
+  datas.pageComponents.forEach((item) => {
+    if (item.active === true) item.active = false
+  })
+  
+  // 设置当前组件为选中状态
+  res.active = true
+}
+```
+
+### 13. 图片处理规范
+```vue
+<template>
+  <!-- 禁用图片拖拽避免冲突 -->
+  <img draggable="false" :src="imageSrc" alt="" />
+  
+  <!-- 条件渲染图片 -->
+  <img 
+    draggable="false" 
+    v-if="datas.imageUrl" 
+    :src="datas.imageUrl" 
+    alt="" 
+  />
+  <img 
+    draggable="false" 
+    v-else 
+    src="@/assets/images/default.png" 
+    alt="" 
+  />
+</template>
+```
+
+### 14. 性能优化规范
+- 使用 `markRaw()` 包装组件防止响应式转换（虽然项目中注释了但仍建议使用）
+- 大列表使用虚拟滚动
+- 图片统一设置 `draggable="false"` 避免拖拽冲突
+- 适当使用 `shallowRef` 和 `shallowReactive`
+
+### 15. 调试和开发工具
+```typescript
+// 开发环境调试
+if (import.meta.env.DEV) {
+  console.log('Debug info:', data)
+}
+
+// 项目中保留的调试信息
+console.log('~~~~~~~~~~~', viewComps.componentPage.persistentComponent)
+```
+
+### 16. 特定业务规则
+- 支持三种页面模式：站点模式、模板模式、组件模式
+- 组件配置支持JSON和视图双模式编辑
+- 手机预览尺寸标注为"iPhone 12pro手机高度"
+- 拖拽组件时显示边框和删除按钮
+- 配置变更需要实时保存和预览
+- 某些组件只能存在一个 (`onlyOne` 数组控制)
+
+### 17. API集成规范
+```typescript
+// WebVision相关API导入
+import { getSysComponent } from '@/api/webgw/sysCompent'
+import { 
+  addTemplateComponent, 
+  getComponentList, 
+  getTemplateComponent, 
+  updatePageRenderingSeq 
+} from '@/api/webgw/template'
+import { 
+  addWebsiteComponent, 
+  findWebsiteComponent, 
+  updateSitePageRenderingSeq 
+} from '@/api/webgw/websit'
+
+// 类型导入
+import type { IGetSysComponentQueryParams, TableData } from '@/api/webgw/sysCompent/types'
+import type { 
+  IGetComponentListQueryParams, 
+  IGetTemplateComponentQueryParams, 
+  TableData as TempTableData 
+} from '@/api/webgw/template/types'
+```
+
+### 18. 权限和安全
+```typescript
+// 权限判断（基于项目实际情况）
+const hasPermission = (permission: string) => {
+  return per.includes(permission)
+}
+
+// 使用示例
+if (hasPermission('webvision:edit')) {
+  // 执行编辑操作
+}
+```
+
+### 19. 会话存储规范
+```typescript
+// 使用项目封装的会话缓存
+import { sessionCache } from '@/hooks/useSession'
+
+// 存储数据
+sessionCache.set('webvision-data', componentData)
+
+// 获取数据
+const cachedData = sessionCache.get('webvision-data')
+```
+
+## 代码质量检查
+- 使用ESLint进行代码检查
+- 使用Prettier进行代码格式化
+- TypeScript严格模式检查
+- 提交前必须通过所有检查
+
+## 注意事项
+1. 新增组件必须同时更新 `componentMap` 和 `componentRightMap` 两个映射表
+2. 配置项变更需要更新类型定义
+3. 样式修改需要考虑移动端适配
+4. API接口变更需要更新类型定义
+5. 所有用户操作需要提供反馈
+6. 确保拖拽功能的流畅性和稳定性
+7. 图片组件必须设置 `draggable="false"` 避免拖拽冲突
+8. 右侧配置组件文件名必须以 `style` 结尾
+
+遵循以上规范可以确保WebVision项目的代码质量、可维护性和团队协作效率。

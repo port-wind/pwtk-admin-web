@@ -1,0 +1,44 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-filesystem", "~/dev_workspace/frontend/pwtk-admin-web"],
+      "autoApprove": ["read_file", "write_file", "list_files", "read_directory"]
+    },
+    "mcp-feedback-enhanced": {
+      "command": "uvx",
+      "args": ["mcp-feedback-enhanced@latest"],
+      "timeout": 600,
+      "autoApprove": ["interactive_feedback", "submit_feedback", "log_feedback"]
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-sequential-thinking"],
+      "autoApprove": ["process_step", "analyze_sequence"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"],
+      "env": {
+        "DEFAULT_MINIMUM_TOKENS": "6000"
+      },
+      "autoApprove": ["store_context", "retrieve_context"]
+    },
+    "mcp_server_mysql": {
+      "command": "npx",
+      "args": ["-y", "@benborla29/mcp-server-mysql"],
+      "env": {
+        "MYSQL_HOST": "192.168.0.199",
+        "MYSQL_PORT": "5136",
+        "MYSQL_USER": "sgsit",
+        "MYSQL_PASS": "it@2024",
+        "MYSQL_DB": "pwtk",
+        "ALLOW_INSERT_OPERATION": "false",
+        "ALLOW_UPDATE_OPERATION": "false",
+        "ALLOW_DELETE_OPERATION": "false",
+        "PATH": "/opt/homebrew/opt/php@7.4/sbin:/opt/homebrew/opt/php@7.4/bin:/opt/homebrew/opt/php@8.2/sbin:/opt/homebrew/opt/php@8.2/bin:/Users/yibu/.rbenv/shims:/Users/yibu/development/flutter/bin:/Users/yibu/.pyenv/shims:/opt/homebrew/bin:/opt/homebrew/sbin:/usr/local/bin:/System/Cryptexes/App/usr/bin:/usr/bin:/bin:/usr/sbin:/sbin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/local/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/bin:/var/run/com.apple.security.cryptexd/codex.system/bootstrap/usr/appleinternal/bin:/Library/Apple/usr/bin:/Applications/Wireshark.app/Contents/MacOS:/usr/local/go/bin:/opt/homebrew/opt/php@7.4/sbin:/opt/homebrew/opt/php@7.4/bin:/opt/homebrew/opt/php@8.2/sbin:/opt/homebrew/opt/php@8.2/bin:/Users/yibu/.rbenv/shims:/Users/yibu/development/flutter/bin:/Users/yibu/Library/pnpm:/Users/yibu/.cargo/bin:/Users/yibu/.orbstack/bin:/Users/yibu/tools/maven/bin:/Users/yibu/tools/jdk-21.0.5.jdk/Contents/Home/bin:/Users/yibu/tools/nvim/bin:/Users/yibu/Library/Android/sdk/platform-tools:/Users/yibu/.orbstack/bin:/Users/yibu/tools/maven/bin:/Users/yibu/tools/jdk-21.0.5.jdk/Contents/Home/bin:/Users/yibu/tools/nvim/bin:/Users/yibu/.cargo/bin:/Users/yibu/Library/Android/sdk/platform-tools",
+        "NODE_PATH": ""
+      }
+    }
+  }
+}
