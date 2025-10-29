@@ -1,0 +1,15 @@
+enum sessionStorageKeys {
+  GAME_DATA = 'GAME_DATA',
+  IP_DATA = 'IP_DATA',
+  GALLERY_DATA = 'GALLERY_DATA',
+  GAME_TYPE_MAP = 'GAME_TYPE_MAP',
+  GAME_DATA_ALL = 'GAME_DATA_ALL', // 所有开奖结果包括日期和期数 Tabs组件用
+  GAME_TYPE = 'GAME_TYPE',
+  GAME_TYPE_CODE = 'GAME_TYPE_CODE',
+  WEBSITE = 'WEBSITE',
+  WEBSITE_DOMAIN = 'WEBSITE_DOMAIN',
+  TAB_INDEX = 'TAB_INDEX',
+  BBS_LIST = 'BBS_LIST'
+}
+
+export default sessionStorageKeys
