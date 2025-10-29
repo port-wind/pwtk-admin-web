@@ -1,0 +1,220 @@
+<template>
+  <section class="wrapper">
+    <section ref="queryRef">
+      <el-form
+        :inline="true"
+        :model="queryForm"
+        class="custom-el-form no-rule"
+        label-width="70px"
+        @keyup.enter="fetchData({ page: 1, size: 15 })"
+      >
+        <el-form-item label="" prop="keyword">
+          <el-input v-model.trim="queryForm.keyword" placeholder="标签名称" />
+        </el-form-item>
+        <el-form-item label="" prop="isActive">
+          <el-select v-model="queryForm.isActive" placeholder="状态" style="width: 100px">
+            <el-option label="全部" value="L" />
+            <el-option label="启用" :value="true" />
+            <el-option label="关闭" :value="false" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="fetchData()" :loading="isLoading">
+            <el-icon>
+              <Search />
+            </el-icon>
+            查询
+          </el-button>
+          <el-button type="primary" @click="resetButton" plain>
+            <el-icon>
+              <Refresh />
+            </el-icon>
+            重置
+          </el-button>
+          <el-button type="success" @click="() => handleAddButton()">
+            <el-icon>
+              <Plus />
+            </el-icon>
+            新增
+          </el-button>
+        </el-form-item>
+      </el-form>
+    </section>
+    <section class="custom-table">
+      <m-table
+        :options="options"
+        :data="tableData"
+        :isLoading="isLoading"
+        isEditRow
+        :pagination="true"
+        stripe
+        :total="total"
+        :currentPage="queryForm.page"
+        :pageSize="queryForm.size"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentChange"
+        :show-overflow-tooltip="{ disabled: true }"
+      >
+        <template #name="{ scope }">
+          <p class="like-a overflow-hidden" @click="handleURLEdit(scope)">
+            {{ truncateText(scope.row.name, 20) }}
+          </p>
+        </template>
+        <template #sortOrder="{ scope }">
+          {{ scope.row.sortOrder }}
+        </template>
+        <template #status="{ scope }">
+          {{ scope.row.isActive ? '启用' : '关闭' }}
+          <status-toggle
+            v-model="scope.row.isActive"
+            :active-value="true"
+            :inactive-value="false"
+            :field-name="'isActive'"
+            :item="scope.row"
+            :update-api="updateTag"
+            @refresh-needed="fetchData"
+          />
+        </template>
+        <template #createTime="{ scope }">
+          {{ unitFormatDate(scope.row.createdAt, 'yyyy-MM-dd HH:mm:ss') }}
+        </template>
+      </m-table>
+    </section>
+  </section>
+  <video-tag-dialog v-if="addDialogVisible" v-model="addDialogVisible" @refresh="fetchData" :id="selectedId" />
+</template>
+
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import type { IReqHttpBBsForumListData, IReqHttpBBsForumListQueryParams } from '@/api/bss/postContentManagement/types'
+import mTable from '@/components/mTable/index.vue'
+import showErrorMessage from '@/utils/showErrorMessage'
+import { truncateText } from '@/utils/dataFormat'
+
+import { unitFormatDate } from '@/utils/dateFormat'
+import { updateTag, getTagList } from '@/api/video'
+
+const queryRef = ref()
+const tableData = ref<IReqHttpBBsForumListData[]>([])
+const total = ref<number>(0)
+//loading 按钮
+const isLoading = ref(false)
+
+const addDialogVisible = ref(false)
+const selectedId = ref('')
+const initForm = (): any => ({
+  keyword: '',
+  isActive: 'L',
+  page: 1,
+  size: 15
+})
+
+const queryForm = reactive<any>(initForm())
+const options = ref<any[]>([
+  {
+    prop: 'name',
+    label: '标签名称',
+    slot: 'name',
+    columAttr: { minWidth: 200 }
+  },
+  {
+    prop: 'status',
+    label: '状态',
+    slot: 'status',
+    columAttr: { minWidth: 200 }
+  },
+
+  {
+    prop: 'sortOrder',
+    label: '排序',
+    slot: 'sortOrder',
+    columAttr: { minWidth: 200 }
+  },
+  {
+    prop: 'createTime',
+    label: '创建时间',
+    slot: 'createTime',
+    columAttr: { minWidth: 200 }
+  }
+])
+//页面初始化获取数据
+const fetchData = async (queryParams?: Partial<IReqHttpBBsForumListQueryParams>) => {
+  isLoading.value = true
+  try {
+    const query: any = {
+      ...queryForm,
+      ...queryParams
+    }
+    if (query.size) {
+      query.pageSize = query.size
+      delete query.size
+    }
+    if (query.isActive === 'L') {
+      delete query.isActive
+    }
+    const response = await getTagList(query)
+    if (response.success) {
+      tableData.value = response.data.list
+      total.value = Number(response.data.pagination.total) ?? 0
+    } else {
+      tableData.value = []
+      total.value = 0
+      showErrorMessage(response)
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error)
+  } finally {
+    isLoading.value = false
+  }
+}
+//分页的每一页数据变化
+const handleSizeChange = (val: number) => {
+  queryForm.size = val
+  fetchData()
+}
+
+//分页页数改变
+const handleCurrentChange = (val: number) => {
+  queryForm.page = val
+  fetchData()
+}
+
+//---------------------------------------------------Search新增按钮点击---------------------------------------------------
+const handleAddButton = (params?: any) => {
+  console.log('🚀 ~ handleAddButton ~ params:', params)
+  selectedId.value = ''
+  addDialogVisible.value = true
+}
+
+// 使用示例
+
+const resetButton = () => {
+  Object.assign(queryForm, initForm())
+  fetchData()
+}
+
+const handleURLEdit = (scope: any) => {
+  console.log('🚀 ~ handleURLEdit ~ scope:', scope)
+  selectedId.value = scope.row.id
+  addDialogVisible.value = true
+}
+
+//页面初始化加载
+onMounted(async () => {
+  await fetchData()
+})
+</script>
+
+<style scoped lang="less">
+.custom-table {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
+}
+.wrapper {
+  height: calc(100vh - 100px);
+  display: flex;
+  flex-direction: column;
+}
+</style>
